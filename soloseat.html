@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Soloseat ソロシート</title>
+<style>
+  :root{
+    --milk:#FFF8EF;
+    --espresso:#3E2C22;
+    --espresso-soft:#7A6557;
+    --persimmon:#FF7A59;
+    --persimmon-deep:#E85C3A;
+    --persimmon-pale:#FFE3D1;
+    --matcha:#7FA86B;
+    --matcha-pale:#E8F0E0;
+    --card:#FFFFFF;
+    --line:#F0E2D2;
+    --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+    background:#EFE6DA;
+    display:flex;justify-content:center;align-items:center;
+    min-height:100vh;padding:12px;
+  }
+  /* ---- phone frame ---- */
+  .phone{
+    width:390px;max-width:100%;height:780px;max-height:96vh;
+    background:var(--milk);
+    border-radius:42px;
+    box-shadow:0 24px 60px rgba(62,44,34,.25), 0 0 0 10px #2E211A;
+    overflow:hidden;position:relative;
+    display:flex;flex-direction:column;
+  }
+  @media(max-width:420px){
+    body{padding:0;}
+    .phone{width:100%;height:100vh;height:100dvh;max-height:none;border-radius:0;box-shadow:none;}
+  }
+  /* ---- status bar ---- */
+  .statusbar{
+    height:48px;flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;font-size:13px;font-weight:700;color:var(--espresso);
+  }
+  /* ---- header ---- */
+  .appheader{
+    flex:none;padding:4px 20px 12px;display:flex;align-items:center;gap:10px;
+  }
+  .logo-seat{
+    width:40px;height:40px;border-radius:13px;background:var(--persimmon);
+    display:flex;align-items:center;justify-content:center;font-size:21px;
+    box-shadow:0 3px 0 var(--persimmon-deep);
+  }
+  .appheader h1{font-size:21px;color:var(--espresso);letter-spacing:.5px;}
+  .appheader h1 small{display:block;font-size:10px;font-weight:600;color:var(--espresso-soft);letter-spacing:1.5px;}
+  .radius-chip{
+    margin-left:auto;font-size:11px;font-weight:700;color:var(--espresso-soft);
+    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 11px;
+  }
+  /* ---- screens ---- */
+  .screens{flex:1;overflow:hidden;position:relative;}
+  .screen{
+    position:absolute;inset:0;overflow-y:auto;padding:4px 16px 96px;
+    display:none;animation:fadein .25s ease;
+  }
+  .screen.active{display:block;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .section-label{
+    font-size:12px;font-weight:800;color:var(--espresso-soft);
+    margin:14px 4px 8px;letter-spacing:.5px;
+  }
+  .section-label span{font-weight:600;opacity:.7;}
+  /* ---- seat cards ---- */
+  .seat-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;
+  }
+  .seat-icon{
+    width:52px;height:52px;border-radius:16px;flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:26px;
+    background:var(--persimmon-pale);
+  }
+  .seat-icon.izakaya{background:#FCEBC8;}
+  .seat-icon.bar{background:#E7E3F2;}
+  .seat-info{flex:1;min-width:0;}
+  .seat-info h3{font-size:15px;color:var(--espresso);}
+  .seat-info .en{font-size:10.5px;color:var(--espresso-soft);font-weight:600;}
+  .seat-meta{display:flex;gap:8px;margin-top:5px;font-size:11px;font-weight:700;}
+  .meta-dist{color:var(--persimmon-deep);}
+  .meta-time{color:var(--espresso-soft);}
+  .meta-going{color:var(--matcha);}
+  .go-btn{
+    flex:none;background:var(--persimmon);color:#fff;border:none;border-radius:14px;
+    padding:11px 13px;font-size:12.5px;font-weight:800;font-family:inherit;cursor:pointer;
+    box-shadow:0 3px 0 var(--persimmon-deep);line-height:1.3;text-align:center;
+  }
+  .go-btn small{display:block;font-size:8.5px;font-weight:700;opacity:.9;}
+  .go-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--persimmon-deep);}
+  .go-btn[disabled]{background:#D8CCC0;box-shadow:0 3px 0 #BFB2A4;cursor:default;}
+  .empty-note{
+    text-align:center;color:var(--espresso-soft);font-size:13px;padding:36px 16px;line-height:1.9;
+  }
+  .empty-note .big{font-size:40px;display:block;margin-bottom:8px;}
+  /* ---- give screen ---- */
+  .give-hero{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;
+    padding:22px 18px;text-align:center;margin-top:10px;
+  }
+  .give-hero .cup{font-size:46px;}
+  .give-hero h2{font-size:17px;color:var(--espresso);margin:10px 0 2px;}
+  .give-hero p{font-size:11.5px;color:var(--espresso-soft);line-height:1.8;}
+  .store-select{
+    width:100%;margin-top:14px;padding:13px;border-radius:14px;border:1.5px solid var(--line);
+    font-family:inherit;font-size:14px;color:var(--espresso);background:var(--milk);
+    font-weight:700;appearance:none;text-align:center;
+  }
+  .big-give-btn{
+    width:100%;margin-top:12px;background:var(--persimmon);color:#fff;border:none;
+    border-radius:18px;padding:17px;font-family:inherit;font-size:17px;font-weight:800;
+    cursor:pointer;box-shadow:0 4px 0 var(--persimmon-deep);
+  }
+  .big-give-btn small{display:block;font-size:10.5px;font-weight:700;opacity:.92;margin-top:2px;}
+  .big-give-btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--persimmon-deep);}
+  .big-give-btn.matcha{background:var(--matcha);box-shadow:0 4px 0 #5F8A4D;}
+  .big-give-btn.matcha:active{box-shadow:0 2px 0 #5F8A4D;}
+  /* live responses */
+  .live-box{
+    margin-top:14px;background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius);padding:16px;display:none;
+  }
+  .live-box.show{display:block;animation:fadein .3s ease;}
+  .live-box h3{font-size:13px;color:var(--espresso);display:flex;align-items:center;gap:7px;}
+  .pulse{
+    width:9px;height:9px;border-radius:50%;background:var(--persimmon);
+    animation:pulse 1.2s infinite;
+  }
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,122,89,.5);}100%{box-shadow:0 0 0 10px rgba(255,122,89,0);}}
+  .responder{
+    display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line);
+    animation:fadein .3s ease;font-size:13px;color:var(--espresso);font-weight:700;
+  }
+  .responder:last-child{border-bottom:none;}
+  .responder .face{
+    width:34px;height:34px;border-radius:50%;background:var(--persimmon-pale);
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;
+  }
+  .responder .sub{display:block;font-size:10px;color:var(--espresso-soft);font-weight:600;}
+  .responder .tag{
+    margin-left:auto;font-size:10px;font-weight:800;color:var(--persimmon-deep);
+    background:var(--persimmon-pale);border-radius:999px;padding:4px 9px;flex:none;
+  }
+  .responder.claimed .tag{color:#fff;background:var(--matcha);}
+  /* ---- race / detail screen ---- */
+  .race-card{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;
+    padding:20px 18px;text-align:center;margin-top:10px;
+  }
+  .race-card .store-emoji{font-size:44px;}
+  .race-card h2{font-size:18px;color:var(--espresso);margin-top:8px;}
+  .race-card .en-sub{font-size:11px;color:var(--espresso-soft);font-weight:600;}
+  .race-status{
+    margin:14px 0;background:var(--persimmon-pale);border-radius:14px;padding:12px;
+    font-size:13px;font-weight:800;color:var(--persimmon-deep);line-height:1.7;
+  }
+  .race-status.won{background:var(--matcha-pale);color:#4E7340;}
+  .walk-bar{
+    height:12px;background:var(--milk);border:1px solid var(--line);border-radius:999px;
+    overflow:hidden;margin:10px 0 4px;position:relative;
+  }
+  .walk-fill{
+    height:100%;width:0%;background:linear-gradient(90deg,var(--persimmon),var(--persimmon-deep));
+    border-radius:999px;transition:width .5s linear;
+  }
+  .walk-label{font-size:11px;color:var(--espresso-soft);font-weight:700;}
+  .rivals{margin-top:12px;font-size:12px;color:var(--espresso-soft);font-weight:700;line-height:1.8;}
+  /* ---- push notification banner ---- */
+  .push{
+    position:absolute;top:10px;left:12px;right:12px;z-index:50;
+    background:rgba(62,44,34,.96);color:#fff;border-radius:18px;padding:13px 15px;
+    display:flex;gap:11px;align-items:flex-start;
+    transform:translateY(-130%);transition:transform .45s cubic-bezier(.2,.9,.3,1.1);
+    box-shadow:0 10px 30px rgba(0,0,0,.3);cursor:pointer;
+  }
+  .push.show{transform:translateY(0);}
+  .push .picon{
+    width:36px;height:36px;border-radius:10px;background:var(--persimmon);flex:none;
+    display:flex;align-items:center;justify-content:center;font-size:19px;
+  }
+  .push .ptitle{font-size:12.5px;font-weight:800;}
+  .push .pbody{font-size:11.5px;opacity:.92;margin-top:2px;line-height:1.5;}
+  .push .ptime{margin-left:auto;font-size:10px;opacity:.6;flex:none;}
+  /* ---- toast ---- */
+  .toast{
+    position:absolute;bottom:96px;left:50%;transform:translate(-50%,20px);
+    background:var(--espresso);color:#fff;font-size:12.5px;font-weight:700;
+    padding:11px 18px;border-radius:999px;opacity:0;transition:.3s;z-index:60;
+    pointer-events:none;text-align:center;line-height:1.5;max-width:85%;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+  /* ---- tab bar ---- */
+  .tabbar{
+    position:absolute;bottom:0;left:0;right:0;height:78px;
+    background:rgba(255,248,239,.94);backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);display:flex;z-index:40;
+    padding-bottom:14px;
+  }
+  .tab{
+    flex:1;border:none;background:none;font-family:inherit;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    font-size:10px;font-weight:800;color:#B6A698;
+  }
+  .tab .ticon{font-size:21px;filter:grayscale(1);opacity:.55;}
+  .tab.active{color:var(--persimmon-deep);}
+  .tab.active .ticon{filter:none;opacity:1;}
+  .tab .ten{font-size:8px;font-weight:700;opacity:.8;}
+  .badge{
+    position:absolute;margin-left:26px;margin-top:-34px;
+    background:var(--persimmon);color:#fff;font-size:9px;font-weight:800;
+    border-radius:999px;padding:2px 6px;display:none;
+  }
+  .badge.show{display:block;}
+  /* ---- onboarding ---- */
+  .onboard{
+    position:absolute;inset:0;z-index:100;background:var(--milk);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px 26px;text-align:center;transition:opacity .45s ease,transform .45s ease;
+  }
+  .onboard.hide{opacity:0;transform:translateY(-16px);pointer-events:none;}
+  .onboard .ob-logo{
+    width:74px;height:74px;border-radius:24px;background:var(--persimmon);
+    display:flex;align-items:center;justify-content:center;font-size:40px;
+    box-shadow:0 5px 0 var(--persimmon-deep);animation:obpop .6s cubic-bezier(.3,1.4,.5,1);
+  }
+  @keyframes obpop{from{transform:scale(.4);opacity:0;}to{transform:scale(1);opacity:1;}}
+  .onboard h1{font-size:26px;color:var(--espresso);margin-top:14px;letter-spacing:1px;}
+  .onboard .ob-sub{font-size:11px;font-weight:700;color:var(--espresso-soft);letter-spacing:2px;margin-top:2px;}
+  .onboard .ob-catch{
+    margin-top:22px;font-size:17.5px;font-weight:800;color:var(--espresso);line-height:1.9;
+  }
+  .onboard .ob-catch em{font-style:normal;color:var(--persimmon-deep);}
+  .onboard .ob-catch-en{
+    font-size:11px;font-weight:700;color:var(--espresso-soft);margin-top:6px;line-height:1.7;
+  }
+  .ob-steps{margin-top:22px;width:100%;display:flex;flex-direction:column;gap:9px;}
+  .ob-step{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:11px 14px;display:flex;gap:11px;align-items:center;text-align:left;
+  }
+  .ob-step .num{
+    width:30px;height:30px;border-radius:50%;flex:none;background:var(--persimmon-pale);
+    color:var(--persimmon-deep);font-size:14px;font-weight:800;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .ob-step .tx{font-size:12.5px;font-weight:800;color:var(--espresso);line-height:1.5;}
+  .ob-step .tx span{display:block;font-size:9.5px;font-weight:700;color:var(--espresso-soft);}
+  .ob-close{
+    margin-top:24px;width:100%;background:var(--persimmon);color:#fff;border:none;
+    border-radius:18px;padding:16px;font-family:inherit;font-size:16px;font-weight:800;
+    cursor:pointer;box-shadow:0 4px 0 var(--persimmon-deep);
+  }
+  .ob-close small{display:block;font-size:10px;font-weight:700;opacity:.92;margin-top:2px;}
+  .ob-close:active{transform:translateY(2px);box-shadow:0 2px 0 var(--persimmon-deep);}
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- onboarding -->
+  <div class="onboard" id="onboard">
+    <div class="ob-logo">🪑</div>
+    <h1>Soloseat</h1>
+    <div class="ob-sub">ソロシート</div>
+    <div class="ob-catch">4人じゃ無理でも、<em>1人なら。</em><br>SoloSeatで、あの人気店へ。</div>
+    <div class="ob-catch-en">No luck with a table for four? Go solo.<br>SoloSeat gets you into that popular spot.</div>
+    <div class="ob-steps">
+      <div class="ob-step">
+        <div class="num">1</div>
+        <div class="tx">席を立つ人やお店が「ソロ席、空けます！」をタップ
+          <span>A guest or the shop taps "Opening up my Soloseat!"</span></div>
+      </div>
+      <div class="ob-step">
+        <div class="num">2</div>
+        <div class="tx">800m圏内に通知が届く。「いま行きます！」で返事してお店へ
+          <span>Everyone within 800m gets pinged — reply "On my way!" and head over</span></div>
+      </div>
+      <div class="ob-step">
+        <div class="num">3</div>
+        <div class="tx">先に着いた人が「ソロ席いただきました！」。他の人へは自動でお知らせ
+          <span>First to arrive taps "Soloseat claimed!" — others are auto-notified</span></div>
+      </div>
+    </div>
+    <button class="ob-close" onclick="startApp()">
+      🪑 ソロ活、はじめる
+      <small>Start your solo adventure</small>
+    </button>
+  </div>
+
+  <!-- push notification -->
+  <div class="push" id="push" onclick="openPush()">
+    <div class="picon">🪑</div>
+    <div>
+      <div class="ptitle" id="pushTitle">Soloseat ソロシート</div>
+      <div class="pbody" id="pushBody"></div>
+    </div>
+    <div class="ptime">now</div>
+  </div>
+
+  <div class="statusbar">
+    <span id="clock">12:34</span>
+    <span>📶 ☕ 🔋</span>
+  </div>
+
+  <div class="appheader">
+    <div class="logo-seat">🪑</div>
+    <h1>Soloseat<small>ソロシート — おひとり様の席、シェアしよ</small></h1>
+    <div class="radius-chip">📍 800m圏内<br><span style="font-weight:600">within 800m</span></div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ===== FIND screen ===== -->
+    <div class="screen active" id="screen-find">
+      <div class="section-label">いま空いてるソロ席 <span>/ Soloseats open now</span></div>
+      <div id="seatList"></div>
+      <div class="empty-note" id="findEmpty" style="display:none">
+        <span class="big">☕</span>
+        いまは空き席なし…通知をまっててね<br>
+        <span style="font-size:11px">No seats open right now — we'll ping you!</span>
+      </div>
+    </div>
+
+    <!-- ===== RACE / detail screen ===== -->
+    <div class="screen" id="screen-race">
+      <div class="race-card">
+        <div class="store-emoji" id="raceEmoji">☕</div>
+        <h2 id="raceStore">—</h2>
+        <div class="en-sub" id="raceStoreEn">—</div>
+        <div class="race-status" id="raceStatus">
+          🏃 「いま行きます！」送信ずみ<br>
+          <span style="font-size:11px;font-weight:700">"On my way!" sent — first to arrive wins the seat</span>
+        </div>
+        <div class="walk-bar"><div class="walk-fill" id="walkFill"></div></div>
+        <div class="walk-label" id="walkLabel">お店までてくてく中… / Walking to the shop…</div>
+        <div class="rivals" id="rivalInfo"></div>
+        <button class="big-give-btn matcha" id="claimBtn" style="display:none" onclick="claimSeat()">
+          🙌 ソロ席いただきました！
+          <small>Soloseat claimed! — notify the others</small>
+        </button>
+        <button class="big-give-btn" id="backToFind" style="display:none;background:var(--espresso);box-shadow:0 4px 0 #241710" onclick="resetRace()">
+          🔍 ほかのソロ席をさがす
+          <small>Find another Soloseat</small>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== GIVE screen ===== -->
+    <div class="screen" id="screen-give">
+      <div class="give-hero" id="giveHero">
+        <div class="cup">🍵</div>
+        <h2>ごちそうさま？席をゆずろう</h2>
+        <p>席を立つまえにポチッ。近くのソロ活仲間に通知がとびます<br>
+        Leaving soon? Tap below to ping solo diners within 800m</p>
+        <select class="store-select" id="storeSelect">
+          <option>☕ こもれびコーヒー / Komorebi Coffee</option>
+          <option>🍶 日本酒スタンド 燗太郎 / Sake Stand Kantaro</option>
+          <option>🍸 BAR ひとりじかん / BAR Hitori-jikan</option>
+          <option>🏮 居酒屋ひとりん / Izakaya Hitorin</option>
+          <option>🥃 モルトバー 木洩れ陽 / Malt Bar Komorebi</option>
+          <option>🍜 麺屋ソロ吉 / Menya Solokichi</option>
+          <option>🏪 店舗スタッフとして投稿 / Post as shop staff</option>
+        </select>
+        <button class="big-give-btn" id="giveBtn" onclick="giveSeat()">
+          🪑 ソロ席、空けます！
+          <small>Opening up my Soloseat!</small>
+        </button>
+      </div>
+
+      <div class="live-box" id="liveBox">
+        <h3><span class="pulse"></span>「いま行きます！」が届いてます <span style="font-weight:600;font-size:10px;color:var(--espresso-soft)">/ Incoming responses</span></h3>
+        <div id="responderList"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- tab bar -->
+  <div class="tabbar">
+    <button class="tab active" id="tab-find" onclick="switchTab('find')">
+      <span class="ticon">🔍</span>さがす<span class="ten">FIND</span>
+    </button>
+    <button class="tab" id="tab-give" onclick="switchTab('give')">
+      <span class="ticon">🪑</span>ゆずる<span class="ten">GIVE</span>
+    </button>
+    <span class="badge" id="findBadge">NEW</span>
+  </div>
+
+</div>
+
+<script>
+/* ================= clock ================= */
+function tickClock(){
+  const d=new Date();
+  document.getElementById('clock').textContent=
+    String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+tickClock();setInterval(tickClock,15000);
+
+/* ================= data ================= */
+const seats=[
+  {emoji:'☕',type:'cafe',name:'こもれびコーヒー',en:'Komorebi Coffee',dist:'180m',ago:'1分前 / 1 min ago',going:2},
+  {emoji:'🍶',type:'izakaya',name:'日本酒スタンド 燗太郎',en:'Sake Stand Kantaro',dist:'260m',ago:'2分前 / 2 min ago',going:1},
+  {emoji:'🍸',type:'bar',name:'BAR ひとりじかん',en:'BAR Hitori-jikan',dist:'340m',ago:'2分前 / 2 min ago',going:1},
+  {emoji:'🏮',type:'izakaya',name:'居酒屋ひとりん',en:'Izakaya Hitorin',dist:'430m',ago:'3分前 / 3 min ago',going:0},
+  {emoji:'🥃',type:'bar',name:'モルトバー 木洩れ陽',en:'Malt Bar Komorebi',dist:'520m',ago:'4分前 / 4 min ago',going:0},
+  {emoji:'🍰',type:'cafe',name:'パティスリーまるいす',en:'Patisserie Maruisu',dist:'610m',ago:'5分前 / 5 min ago',going:0},
+];
+const rivals=[
+  {face:'🧑‍💼',name:'カウンター好きさん',en:'Counter-lover'},
+  {face:'👩‍🎨',name:'カフェ作業中さん',en:'Cafe-worker'},
+  {face:'🧓',name:'散歩とちゅうさん',en:'Out-for-a-walk'},
+  {face:'🧑‍🎓',name:'ソロ飯みならいさん',en:'Solo-meal rookie'},
+];
+
+/* ================= tabs ================= */
+let currentTab='find';
+function switchTab(t,screenOverride){
+  currentTab=t;
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));
+  document.getElementById('screen-'+(screenOverride||t)).classList.add('active');
+  if(t==='find')document.getElementById('findBadge').classList.remove('show');
+}
+
+/* ================= toast ================= */
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.innerHTML=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ================= push ================= */
+let pushTimer,pushAction=null;
+function showPush(title,body,action){
+  const p=document.getElementById('push');
+  document.getElementById('pushTitle').textContent=title;
+  document.getElementById('pushBody').innerHTML=body;
+  pushAction=action||null;
+  p.classList.add('show');
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(()=>p.classList.remove('show'),5200);
+}
+function openPush(){
+  document.getElementById('push').classList.remove('show');
+  if(pushAction)pushAction();
+}
+
+/* ================= FIND list ================= */
+function renderSeats(){
+  const list=document.getElementById('seatList');
+  list.innerHTML='';
+  if(seats.length===0){
+    document.getElementById('findEmpty').style.display='block';return;
+  }
+  document.getElementById('findEmpty').style.display='none';
+  seats.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.className='seat-card';
+    card.innerHTML=`
+      <div class="seat-icon ${s.type}">${s.emoji}</div>
+      <div class="seat-info">
+        <h3>${s.name}</h3>
+        <div class="en">${s.en}</div>
+        <div class="seat-meta">
+          <span class="meta-dist">📍 ${s.dist}</span>
+          <span class="meta-time">🕐 ${s.ago}</span>
+          ${s.going>0?`<span class="meta-going">🏃 ${s.going}人が向かい中 / ${s.going} going</span>`:''}
+        </div>
+      </div>
+      <button class="go-btn" onclick="joinRace(${i})">いま行きます！<small>On my way!</small></button>`;
+    list.appendChild(card);
+  });
+}
+renderSeats();
+
+/* ================= RACE flow ================= */
+let raceTimers=[],walkPct=0,walkInterval;
+function clearRace(){
+  raceTimers.forEach(t=>clearTimeout(t));raceTimers=[];
+  clearInterval(walkInterval);walkPct=0;
+}
+function joinRace(i){
+  const s=seats[i];
+  clearRace();
+  document.getElementById('raceEmoji').textContent=s.emoji;
+  document.getElementById('raceStore').textContent=s.name;
+  document.getElementById('raceStoreEn').textContent=s.en+' ・ '+s.dist;
+  const status=document.getElementById('raceStatus');
+  status.className='race-status';
+  status.innerHTML='🏃 「いま行きます！」送信ずみ<br><span style="font-size:11px;font-weight:700">"On my way!" sent — first to arrive wins the seat</span>';
+  document.getElementById('walkFill').style.width='0%';
+  document.getElementById('walkLabel').textContent='お店までてくてく中… / Walking to the shop…';
+  document.getElementById('claimBtn').style.display='none';
+  document.getElementById('backToFind').style.display='none';
+  const rc=1+Math.floor(Math.random()*2);
+  document.getElementById('rivalInfo').innerHTML=
+    `👀 ほかに ${rc}人 もこの席へ向かっています<br><span style="font-size:10.5px">${rc} other solo diner${rc>1?'s are':' is'} heading there too — がんばって！</span>`;
+  switchTab('find','race');
+  showToast('🏃 「いま行きます！」を送信しました<br>Sent "On my way!"');
+  /* walking progress */
+  walkInterval=setInterval(()=>{
+    walkPct=Math.min(100,walkPct+4);
+    document.getElementById('walkFill').style.width=walkPct+'%';
+    if(walkPct>=100){
+      clearInterval(walkInterval);
+      document.getElementById('walkLabel').textContent='🎉 お店にとうちゃく！ / You arrived!';
+      document.getElementById('claimBtn').style.display='block';
+      showPush('Soloseat ソロシート','📍 お店に着いたら「ソロ席いただきました！」をタップ<br>Arrived? Tap "Soloseat claimed!"');
+    }
+  },400);
+}
+function claimSeat(){
+  clearRace();
+  const status=document.getElementById('raceStatus');
+  status.className='race-status won';
+  status.innerHTML='🙌 ソロ席、いただきました！ごゆっくり〜<br><span style="font-size:11px;font-weight:700">Soloseat is yours — enjoy! Others have been notified.</span>';
+  document.getElementById('claimBtn').style.display='none';
+  document.getElementById('backToFind').style.display='block';
+  document.getElementById('rivalInfo').innerHTML=
+    '📨 向かっていた人へ自動でお知らせしました：<br>「ごめんね、この席はうまりました🙏 また次のソロ席で！」<br><span style="font-size:10.5px">Auto-message sent: "Sorry, this seat was just taken 🙏 See you at the next Soloseat!"</span>';
+  showToast('📨 ほかの参加者へ連絡しました<br>Notified the other responders');
+}
+function resetRace(){
+  seats.shift();
+  renderSeats();
+  switchTab('find');
+}
+
+/* ================= GIVE flow ================= */
+let giveTimers=[];
+function giveSeat(){
+  giveTimers.forEach(t=>clearTimeout(t));giveTimers=[];
+  const store=document.getElementById('storeSelect').value;
+  const btn=document.getElementById('giveBtn');
+  btn.disabled=true;btn.style.opacity=.55;
+  btn.innerHTML='📡 通知ずみ！ありがとう、ソロ活の神<small>Pinged! You\'re a Soloseat hero</small>';
+  showToast('📡 800m圏内のソロ活仲間へ通知しました<br>Pinged solo diners within 800m');
+  const box=document.getElementById('liveBox');
+  box.classList.add('show');
+  const list=document.getElementById('responderList');
+  list.innerHTML='<div style="font-size:11.5px;color:var(--espresso-soft);padding:8px 0;font-weight:700">返事をまっています… / Waiting for replies…</div>';
+  const picked=[...rivals].sort(()=>Math.random()-.5).slice(0,3);
+  picked.forEach((r,idx)=>{
+    giveTimers.push(setTimeout(()=>{
+      if(idx===0)list.innerHTML='';
+      const d=document.createElement('div');
+      d.className='responder';
+      d.innerHTML=`<div class="face">${r.face}</div>
+        <div>${r.name}<span class="sub">${r.en}</span></div>
+        <span class="tag">🏃 いま行きます！</span>`;
+      list.appendChild(d);
+      showPush('Soloseat ソロシート',`🏃 ${r.name} さんが向かっています！<br>${r.en} is on the way!`);
+    },1500+idx*2200));
+  });
+  /* someone claims */
+  giveTimers.push(setTimeout(()=>{
+    const first=list.querySelector('.responder');
+    if(first){
+      first.classList.add('claimed');
+      first.querySelector('.tag').textContent='🙌 席いただきました！';
+    }
+    showPush('Soloseat ソロシート','🙌 ソロ席が無事つぎの方へ！ごちそうさまでした✨<br>Your Soloseat found its next guest — thank you!');
+    const done=document.createElement('div');
+    done.style.cssText='margin-top:10px;font-size:11.5px;color:#4E7340;background:var(--matcha-pale);border-radius:12px;padding:10px;font-weight:800;line-height:1.7;text-align:center;';
+    done.innerHTML='✅ バトンタッチ完了！ほかの方には自動でご連絡ずみ<br><span style="font-size:10px;font-weight:700">Handover complete — other responders were auto-notified</span>';
+    list.appendChild(done);
+    btn.disabled=false;btn.style.opacity=1;
+    btn.innerHTML='🪑 ソロ席、空けます！<small>Opening up my Soloseat!</small>';
+  },1500+picked.length*2200+2600));
+}
+
+/* ================= onboarding ================= */
+function startApp(){
+  document.getElementById('onboard').classList.add('hide');
+  setTimeout(()=>{
+    showPush('Soloseat ソロシート',
+      '🪑 こもれびコーヒーでソロ席が空きました！(180m)<br>A Soloseat just opened at Komorebi Coffee (180m)',
+      ()=>{switchTab('find');});
+    document.getElementById('findBadge').classList.add('show');
+  },2500);
+}
+</script>
+</body>
+</html>
